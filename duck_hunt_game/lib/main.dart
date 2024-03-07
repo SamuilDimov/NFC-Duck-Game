@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(MyApp());
@@ -47,18 +48,17 @@ class _GameHomePageState extends State<GameHomePage> with TickerProviderStateMix
   int scanCount = 3;
   List<Duck> ducks = [];
   late Timer duckRegenerationTimer;
+  final AudioPlayer audioPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
     generateDucks(3);
-
     duckRegenerationTimer = Timer.periodic(Duration(seconds: 5), (_) {
       if (ducks.length < 6) {
         generateDucks(1);
       }
     });
-
     NfcManager.instance.isAvailable().then((bool isAvailable) {
       if (isAvailable) {
         NfcManager.instance.startSession(
@@ -87,6 +87,7 @@ class _GameHomePageState extends State<GameHomePage> with TickerProviderStateMix
 
   void handleDuckTap(Duck duck) {
     if (scanCount > 0) {
+      audioPlayer.play(AssetSource('quack.mp3'));  // Updated play method
       setState(() {
         ducks.remove(duck);
         scanCount--;
@@ -97,6 +98,7 @@ class _GameHomePageState extends State<GameHomePage> with TickerProviderStateMix
   @override
   void dispose() {
     duckRegenerationTimer.cancel();
+    audioPlayer.dispose();
     for (var duck in ducks) {
       duck.controller.dispose();
     }
