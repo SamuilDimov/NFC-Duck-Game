@@ -59,11 +59,13 @@ class _GameHomePageState extends State<GameHomePage> with TickerProviderStateMix
         generateDucks(1);
       }
     });
+
     NfcManager.instance.isAvailable().then((bool isAvailable) {
       if (isAvailable) {
         NfcManager.instance.startSession(
           onDiscovered: (NfcTag tag) async {
             print("NFC Tag discovered: $tag");
+            audioPlayer.play(AssetSource('gun.mp3'));  // Play gun sound on NFC scan
             setState(() {
               scanCount++;
             });
@@ -87,7 +89,7 @@ class _GameHomePageState extends State<GameHomePage> with TickerProviderStateMix
 
   void handleDuckTap(Duck duck) {
     if (scanCount > 0) {
-      audioPlayer.play(AssetSource('quack.mp3'));  // Updated play method
+      audioPlayer.play(AssetSource('quack.mp3'));  // Play duck sound on tap
       setState(() {
         ducks.remove(duck);
         scanCount--;
@@ -140,7 +142,7 @@ class _GameHomePageState extends State<GameHomePage> with TickerProviderStateMix
             right: 20,
             bottom: 20,
             child: Text(
-              'Scans: $scanCount',
+              'Ammo: $scanCount',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
             ),
           ),
