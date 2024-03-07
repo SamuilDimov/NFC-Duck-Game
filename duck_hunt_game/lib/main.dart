@@ -23,22 +23,52 @@ class GameHomePage extends StatefulWidget {
   _GameHomePageState createState() => _GameHomePageState();
 }
 
-class _GameHomePageState extends State<GameHomePage> {
-  // Function to check NFC availability
-  Future<bool> checkNFC() async {
-    bool isNfcAvailable = await NfcManager.instance.isAvailable();
-    return isNfcAvailable;
+class _GameHomePageState extends State<GameHomePage> with SingleTickerProviderStateMixin {
+  int scanCount = 3; // Start with 3 scans
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    )..repeat(reverse: false);
+
+    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(_controller);
+
+    handleNFC();
   }
 
-  // Function to start NFC session
-  void startNFCSession() {
-    NfcManager.instance.startSession(
-      onDiscovered: (NfcTag tag) async {
-        // Handle NFC tag discovery
-        print("NFC Tag discovered: $tag");
-        // 
-      },
-    );
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void handleNFC() async {
+    if (await NfcManager.instance.isAvailable()) {
+      NfcManager.instance.startSession(
+        onDiscovered: (NfcTag tag) async {
+          print("NFC Tag discovered: $tag");
+          setState(() {
+            scanCount++;
+          });
+        }
+      );
+    } else {
+      // Existing dialog for unavailable NFC
+    }
+  }
+
+  // Method to decrement scan count
+  void decrementScan() {
+    if (scanCount > 0) {
+      setState(() {
+        scanCount--;
+      });
+    }
   }
 
   @override
@@ -46,42 +76,44 @@ class _GameHomePageState extends State<GameHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('NFC Duck Hunt Game'),
+        backgroundColor: Colors.green,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Welcome to NFC Duck Hunt!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Stack(
+         children: [
+          // Background Image Container
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/sky.png'),
+                fit: BoxFit.cover,
+              ),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                bool nfcAvailable = await checkNFC();
-                if (nfcAvailable) {
-                  startNFCSession();
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('NFC Unavailable'),
-                      content: Text('NFC is not available or not enabled on this device.'),
-                      actions: <Widget>[
-                        TextButton(
-                          child: Text('OK'),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              },
-              child: Text('Start NFC Scan'),
+          ),
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return Positioned(
+                left: MediaQuery.of(context).size.width * _animation.value - 50,
+                top: MediaQuery.of(context).size.height * 0.3,
+                child: GestureDetector(
+                  onTap: decrementScan,
+                  child: child,
+                ),
+              );
+            },
+            child: Image.asset('assets/duck.png', width: 100),
+          ),
+
+          // Scans Text
+          Positioned(
+            right: 20,
+            bottom: 20,
+            child: Text(
+              'Scans: $scanCount',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
             ),
-            // Additional game UI elements can be added here
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
