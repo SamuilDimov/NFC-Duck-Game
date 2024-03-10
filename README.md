@@ -15,3 +15,23 @@ NFC Duck Hunt is a fun and interactive Flutter-based mobile game. Players scan N
 1. Clone the repository to your local machine:
    ```sh
    git clone https://github.com/your-username/duck-hunt-game.git
+2. Navigate to the project directory:
+   cd duck-hunt-game
+
+3. Run the app using your IDE or the command line:
+   flutter run
+# Dependencies
+- Flutter SDK
+- NFC Manager
+- Audioplayers
+
+# Usage
+To play the game:
+
+Ensure your device’s NFC is enabled.
+Open the app and wait for the ducks to appear.
+Scan NFC tags to increase your score.
+Tap on the ducks to decrease your score.
+Enjoy the game with sound effects!
+
+   
