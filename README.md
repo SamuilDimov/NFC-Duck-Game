@@ -1,5 +1,4 @@
-# NFC-Duck-Game
-NFC Duck Game 
+
 # NFC Duck Hunt Game
 
 ## Description
